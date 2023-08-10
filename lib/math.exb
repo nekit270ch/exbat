@@ -1,0 +1,7 @@
+function pow(num, p, out_result)
+	set "str=$num"
+	for /l %%i in (2,1,$p) do (
+		set "str=$str * $num"
+	)
+	set /a "$out_result=$str"
+end function

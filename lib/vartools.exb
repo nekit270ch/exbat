@@ -1,0 +1,7 @@
+function set(var_name, value)
+	set "$var_name=$value"
+end function
+
+function sete(var_name, command)
+	for /f "tokens=* usebackq" %%i in (`$command`) do set "$var_name=%%i"
+end function
