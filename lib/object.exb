@@ -1,0 +1,17 @@
+function object_get(object, property, out_value)
+	set "$out_value=!$object.$property!"
+end function
+
+function obj_set(object, property, value)
+	set "$object.$property=$value"
+end function
+
+function obj_getkeys(object, out_array)
+	set /a i=0
+	for /f "tokens=1,* delims==" %%i in ('set $object.') do (
+		for /f "tokens=2 delims=." %%j in ("%%i") do (
+			set "$out_array[!i!]=%%j"
+			set /a i+=1
+		)
+	)
+end function

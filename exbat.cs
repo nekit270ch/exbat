@@ -1,20 +1,56 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
 
 namespace ExtendedBAT{
     public class ExtendedBAT{
-        private static string compilerDir = new FileInfo(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName).Directory.FullName;
+        private static string compilerDir = new FileInfo(Process.GetCurrentProcess().MainModule.FileName).Directory.FullName;
 
         public static void Main(string[] args){
+            string tooFewArgs = "ОШИБКА: Недостаточно аргументов.\r\nВведите \"exbat --help\" для справки.";
+
             if(args.Length == 0){
-                Console.WriteLine("Usage: exbat <fileName>");
+                Console.WriteLine(tooFewArgs);
                 Environment.Exit(1);
             }
 
-            File.WriteAllText(args[0].Replace(".exb", ".bat"), Compile(File.ReadAllText(args[0])));
+            if(args[0] == "--help"){
+                Console.WriteLine("exbat [-c,--compile <inputFile> <outputFile>] [-r,--run <inputFile>]\r\n\r\n\t-c,--compile <inputFile> <outputFile>        Компилирует скрипт ExBAT.\r\n\t-r,--run <inputFile>                         Компилирует и выполняет скрипт ExBAT.");
+            }
+
+            if(args[0] == "-c" || args[0] == "--compile"){
+                if(args.Length < 3){
+                    Console.WriteLine(tooFewArgs);
+                    Environment.Exit(1);
+                }
+                
+                if(!File.Exists(args[1])){
+                    Console.WriteLine("ОШИБКА: Файл не найден.");
+                    Environment.Exit(0);
+                }
+
+                File.WriteAllText(args[2], Compile(File.ReadAllText(args[1])));
+            }
+
+            if(args[0] == "-r" || args[0] == "--run"){
+                if(args.Length < 2){
+                    Console.WriteLine(tooFewArgs);
+                    Environment.Exit(1);
+                }
+
+                if(!File.Exists(args[1])){
+                    Console.WriteLine("ОШИБКА: Файл не найден.");
+                    Environment.Exit(0);
+                }
+
+                string path = Environment.GetEnvironmentVariable("temp")+"\\"+GetRandomName(20)+".bat";
+                File.WriteAllText(path, Compile(File.ReadAllText(args[1])));
+                Process.Start(path).WaitForExit();
+                File.Delete(path);
+            }
         }
 
         public static string Compile(string content){
@@ -42,9 +78,11 @@ namespace ExtendedBAT{
             int i = 0;
 
             foreach(string line in fc){
-                if(line.TrimStart() == "purebatch"){
+                string lts = line.TrimStart();
+
+                if(lts == "purebatch"){
                     parse = true;
-                }else if(line.TrimStart() == "end purebatch"){
+                }else if(lts == "end purebatch"){
                     parse = false;
                 }
 
@@ -52,44 +90,46 @@ namespace ExtendedBAT{
 
                 if(line.StartsWith("#") || line.StartsWith("//")){
                     fc[i] = line.Replace("#", "rem ").Replace("//", "rem ");
-                }else if(line.TrimStart().StartsWith("noout(")){
+                }else if(lts.StartsWith("noout(")){
                     fc[i] = line.Remove(line.Length-1).Replace("noout(", "")+"> nul";
-                }else if(line.TrimStart().StartsWith("noerror(")){
+                }else if(lts.StartsWith("noerror(")){
                     fc[i] = line.Remove(line.Length-1).Replace("quiet(", "")+"2> nul";
-                }else if(line.TrimStart().StartsWith("quiet(")){
+                }else if(lts.StartsWith("quiet(")){
                     fc[i] = line.Remove(line.Length-1).Replace("quiet(", "")+"> nul 2> nul";
-                }else if(line.TrimStart().StartsWith("if(")){
+                }else if(lts.StartsWith("if(")){
                     string cond = Regex.Match(line, @"if\(([^\)]+)\)").Groups[1].ToString();
                     fc[i] = "if "+cond.Replace("<=", "leq").Replace(">=", "geq").Replace("<", "lss").Replace(">", "gtr").Replace(" == ", " equ ")+" (";
-                }else if(line.TrimStart() == "end if"){
+                }else if(lts == "end if"){
                     fc[i] = ")";
-                }else if(line.TrimStart() == "else"){
+                }else if(lts == "else"){
                     fc[i] = ") else (";
-                }else if(line.TrimStart().StartsWith("else if(")){
+                }else if(lts.StartsWith("else if(")){
                     string cond = Regex.Match(line, @"else if\(([^\)]+)\)").Groups[1].ToString();
                     fc[i] = ") else if "+cond.Replace("<=", "leq").Replace(">=", "geq").Replace("<", "lss").Replace(">", "gtr").Replace(" == ", " equ ")+" (";
-                }else if(line.TrimStart().StartsWith("function ")){
+                }else if(lts.StartsWith("function ")){
                     string[] spl = line.Replace("(", " ").Replace(")", "").Replace(", ", " ").Replace(",", " ").Split(' ');
                     isFunc = true;
                     fnn = spl[1];
                     foreach(string fa in spl.Skip(2)) fna.Add(fa);
                     fc[i] = ":"+fnn+Environment.NewLine+"if \"%~1\"==\""+randFuncArg+"\" ( shift /1 ) else ( goto _"+randName+"_end_"+fnn+" )";
                     fna.Add(fnn);
-                }else if(line.TrimStart() == "end function"){
+                }else if(lts == "end function"){
                     isFunc = false;
                     fna.Clear();
                     fc[i] = "goto :eof"+Environment.NewLine+":_"+randName+"_end_"+fnn;
                     fnn = "";
-                }else if(isFunc){
-                    for(int j = 0; j < fna.Count; j++){
-                        fc[i] = fc[i].Replace("$"+fna[j], "%~"+(j+1).ToString());
-                    }
-                }else if(Regex.IsMatch(line, @"^[A-Za-z0-9_\-\.]+\([^\)]*\)$")){
-                    var m = Regex.Match(line, @"^([A-Za-z0-9_\-\.]+)\(([^\)]*)\)$");
+                }else if(Regex.IsMatch(lts, @"^[A-Za-z0-9_\-\.]+\(.*\)$")){
+                    var m = Regex.Match(lts, @"^([A-Za-z0-9_\-\.]+)\((.*)\)$");
                     fc[i] = "call :"+m.Groups[1].ToString()+" "+randFuncArg+" "+m.Groups[2].ToString().Replace(", ", " ").Replace(",", " ").Replace(" out ", " ");
                 }
 
-                fc[i] = Regex.Replace(fc[i], @"\$([A-Za-z0-9_\-\.]+)", new MatchEvaluator((m)=>{
+                if(isFunc){
+                    for(int j = 0; j < fna.Count; j++){
+                        fc[i] = fc[i].Replace("$"+fna[j], "%~"+(j+1).ToString());
+                    }
+                }
+
+                fc[i] = Regex.Replace(fc[i], @"\$([A-Za-z0-9_\.\[\]]+)", new MatchEvaluator((m)=>{
                     return "!"+m.Groups[1].ToString()+"!";
                 }));
 

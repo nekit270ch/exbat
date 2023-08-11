@@ -1,0 +1,19 @@
+function str_split(string, separator, out_arr, out_len)
+	set "str=$string"
+	set "str=!str:$separator=" "!"
+	set /a c=0
+	for %%i in ("!str!") do (
+		set "$out_arr[!c!]=%%~i"
+		set /a c+=1
+	)
+	set "$out_len=!c!"
+end function
+
+function str_replace(string, substr, replacement, out_str)
+	set "$out_str=$string"
+	set "$out_str=!str:$substr:$replacement!"
+end function
+
+function str_is_match(string, regex, out_result)
+	for /f "usebackq" %%i in (`mshta "javascript:moveTo(-9999,-9999);new ActiveXObject('Scripting.FileSystemObject').GetStandardStream(1).Write(/$regex/.test('$string')?'1':'0');close();"`) do set "$out_result=%%i"
+end function

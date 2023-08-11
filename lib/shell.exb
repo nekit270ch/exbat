@@ -1,0 +1,65 @@
+function msgbox(text, title, buttons, icon, out_answer)
+	for /f "usebackq" %%i in (`mshta "javascript:moveTo(-9999,-9999);new ActiveXObject('Scripting.FileSystemObject').GetStandardStream(1).Write(new ActiveXObject('WScript.Shell').Popup('$text',0,'$title',$buttons+$icon));window.close()"`) do set "$out_answer=%%i"
+end function
+
+function run_hidden(app_name, args)
+	set "b_path=$app_name"
+	set "b_args=$args"
+	mshta "javascript:moveTo(-9999,-9999);new ActiveXObject('WScript.Shell').Run('%b_path:\=\\% h %b_args:\=\\%', 0);window.close();"
+end function
+
+function run_as_admin(app_name, args)
+	set "b_path=$app_name"
+	set "b_args=$args"
+	mshta "javascript:moveTo(-9999,-9999);new ActiveXObject('Shell.Application').ShellExecute('%b_path:\=\\%', '%b_args:\=\\%', '', 'runas', 0);window.close();"
+end function
+
+function open_image(image_file)
+	mshta "about:<head><meta http-equiv='x-ua-compatible' content='ie=9'><title>%~2</title><hta:application minimizebutton=no maximizebutton=no contextmenu=no scroll=no border=dialog /></head><body><img id=i style='position:absolute;left:0;top:0' src='$image_path'><script>i.onload=function(){var w=i.naturalWidth+30,h=i.naturalHeight+50;moveTo(screen.width/2-w/2,screen.height/2-h/2);resizeTo(w,h);}</script></body>"
+end function
+
+function play_audio(audio_file, delay)
+	set "pth=%~1"
+	set "pth=file://%pth:\=/%"
+	mshta "about:<bgsound src='%pth%'><script>moveTo(-9999,-9999);setTimeout(function(){window.close()},$delay)</script>"
+end function
+
+function set_system_font(font_name)
+	noout(reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "Segoe UI (TrueType)" /d "" /t REG_SZ /f)
+	noout(reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "Segoe UI Black (TrueType)" /d "" /t REG_SZ /f)
+	noout(reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "Segoe UI Black Italic (TrueType)" /d "" /t REG_SZ /f)
+	noout(reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "Segoe UI Bold (TrueType)" /d "" /t REG_SZ /f)
+	noout(reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "Segoe UI Bold Italic (TrueType)" /d "" /t REG_SZ /f)
+	noout(reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "Segoe UI Historic (TrueType)" /d "" /t REG_SZ /f)
+	noout(reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "Segoe UI Italic (TrueType)" /d "" /t REG_SZ /f)
+	noout(reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "Segoe UI Light (TrueType)" /d "" /t REG_SZ /f)
+	noout(reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "Segoe UI Light Italic (TrueType)" /d "" /t REG_SZ /f)
+	noout(reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "Segoe UI Semibold (TyueType)" /d "" /t REG_SZ /f)
+	noout(reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "Segoe UI Semibold Italic (TrueType)" /d "" /t REG_SZ /f)
+	noout(reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "Segoe UI Semilight (TrueType)" /d "" /t REG_SZ /f)
+	noout(reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "Segoe UI Semilight Italic (TrueType)" /d "" /t REG_SZ /f)
+	noout(reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontsSubstitutes" /v "Segoe UI" /d "$font_name" /t REG_SZ /f)
+end function
+
+function restore_system_font()
+	noout(reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "Segoe UI (TrueType)" /d "segoeui.ttf" /t REG_SZ /f)
+	noout(reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "Segoe UI Black (TrueType)" /d "seguibl.ttf" /t REG_SZ /f)
+	noout(reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "Segoe UI Black Italic (TrueType)" /d "seguibl.ttf" /t REG_SZ /f)
+	noout(reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "Segoe UI Bold (TrueType)" /d "segoeuib.ttf" /t REG_SZ /f)
+	noout(reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "Segoe UI Bold Italic (TrueType)" /d "segoeuiz.ttf" /t REG_SZ /f)
+	noout(reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "Segoe UI Historic (TrueType)" /d "seguihis.ttf" /t REG_SZ /f)
+	noout(reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "Segoe UI Italic (TrueType)" /d "segoeuii.ttf" /t REG_SZ /f)
+	noout(reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "Segoe UI Light (TrueType)" /d "segoeuil.ttf" /t REG_SZ /f)
+	noout(reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "Segoe UI Light Italic (TrueType)" /d "seguili.ttf" /t REG_SZ /f)
+	noout(reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "Segoe UI Semibold (TyueType)" /d "seguisb.ttf" /t REG_SZ /f)
+	noout(reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "Segoe UI Semibold Italic (TrueType)" /d "seguisbi.ttf" /t REG_SZ /f)
+	noout(reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "Segoe UI Semilight (TrueType)" /d "segoeuisl.ttf" /t REG_SZ /f)
+	noout(reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" /v "Segoe UI Semilight Italic (TrueType)" /d "seguisli.ttf" /t REG_SZ /f)
+	noout(reg delete "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontsSubstitutes" /v "Segoe UI" /t REG_SZ /f)
+end function
+
+function set_wallpaper(image_file)
+	noout(reg add "HKCU\Control Panel\Desktop" /v Wallpaper /d "$image_file" /t REG_SZ /f)
+	noout(reg delete "HKCU\SOFTWARE\Microsoft\Internet Explorer\Desktop\General" /v WallpaperStyle /f)
+	noout(reg add "HKCU\Control Panel\Desktop" /v WallpaperStyle /d 2 /t REG_SZ /f)
+end function

@@ -1,0 +1,18 @@
+function curl(url, out_http_status, out_result_array, out_length)
+	set _statCode=0
+	set _ln=0
+	for /f "usebackq tokens=*" %%i in (`curl -D "%temp%\headers.txt" "$url" -s`) do (
+		set "$out_result_array[!_ln!]=%%i"
+		set /a "_ln+=1"
+	)
+	
+	for /f "usebackq tokens=2" %%j in ("%temp%\headers.txt") do (
+		set "_statCode=%%j"
+		goto _end
+	)
+	
+	:_end
+	del "%temp%\headers.txt"
+	set "$out_http_status=%_statCode%"
+	set /a "$out_length=%_ln%"
+end function

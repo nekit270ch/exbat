@@ -1,0 +1,29 @@
+function array_get(name, index, out_val)
+	set "$out_val=!$name[$index]!"
+end function
+
+function array_set(name, index, value)
+	set "$name[$index]=$value"
+end function
+
+function array_push(name, element)
+	array_len("$name", out _len)
+	set "$name[%_len%]=$element"
+end function
+
+function array_len(name, out_len)
+	set /a i=0
+	for /f %%i in ('set $name[') do set /a i+=1
+	set /a "$out_len=%i%"
+end function
+
+function array_foreach(name, command)
+	array_len("$name", out _len)
+	set /a "l=%_len%-1"
+	for /l %%i in (0,1,%l%) do (
+		set "ae=!$name[%%i]!"
+		set "cmd=$command"
+		for /f "tokens=*" %%j in ("!ae!") do set "cmd=!cmd:{}=%%j!"
+		!cmd!
+	)
+end function
