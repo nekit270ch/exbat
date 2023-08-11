@@ -1,5 +1,0 @@
-function play_audio(path, delay)
-	set "pth=$path"
-	set "pth=file://%pth:\=/%"
-	mshta "about:<bgsound src='%pth%'><script>moveTo(-9999,-9999);setTimeout(function(){close()},$delay)</script>"
-goto :eof
