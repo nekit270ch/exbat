@@ -9,6 +9,16 @@ function str_split(string, separator, out_arr, out_len)
 	set "$out_len=!c!"
 end function
 
+function str_char_at(string, index, out_char)
+	set "str=$string"
+	set "$out_char=%str:~$index,1%"
+end function
+
+function str_substr(string, start, len, out_substr)
+	set "str=$string"
+	set "$out_substr=%str:~$start,$len%"
+end function
+
 function str_replace(string, substr, replacement, out_str)
 	set "$out_str=$string"
 	set "$out_str=!str:$substr:$replacement!"

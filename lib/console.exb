@@ -1,61 +1,3 @@
-function print(text, fcolor, bgcolor, newline)
-	if(not defined e)
-		pushd "%temp%"
-		if(not exist e.txt)
-			mshta "javascript:var f=new ActiveXObject("Scripting.FileSystemObject").CreateTextFile("e.txt",true);f.Write('\x1B');f.Close();window.close()"
-		end if
-		for /f %%i in (e.txt) do set "e=%%i"
-		popd
-	end if
-
-	set fgc=0
-	set bgc=40
-
-	if "$fcolor"=="default" goto select_bgc
-	if "$fcolor"=="black" set fgc=30& goto select_bgc
-	if "$fcolor"=="red" set fgc=31& goto select_bgc
-	if "$fcolor"=="green" set fgc=32& goto select_bgc
-	if "$fcolor"=="yellow" set fgc=33& goto select_bgc
-	if "$fcolor"=="blue" set fgc=34& goto select_bgc
-	if "$fcolor"=="magenta" set fgc=35& goto select_bgc
-	if "$fcolor"=="cyan" set fgc=36& goto select_bgc
-	if "$fcolor"=="lgray" set fgc=37& goto select_bgc
-	if "$fcolor"=="dgray" set fgc=90& goto select_bgc
-	if "$fcolor"=="lred" set fgc=91& goto select_bgc
-	if "$fcolor"=="lgreen" set fgc=92& goto select_bgc
-	if "$fcolor"=="lyellow" set fgc=93& goto select_bgc
-	if "$fcolor"=="lblue" set fgc=94& goto select_bgc
-	if "$fcolor"=="lmagenta" set fgc=95& goto select_bgc
-	if "$fcolor"=="lcyan" set fgc=96& goto select_bgc
-	if "$fcolor"=="white" set fgc=97& goto select_bgc
-
-	:select_bgc
-	if "$bgcolor"=="default" goto write_text
-	if "$bgcolor"=="black" set bgc=40& goto write_text
-	if "$bgcolor"=="red" set bgc=41& goto write_text
-	if "$bgcolor"=="green" set bgc=42& goto write_text
-	if "$bgcolor"=="yellow" set bgc=43& goto write_text
-	if "$bgcolor"=="blue" set bgc=44& goto write_text
-	if "$bgcolor"=="magenta" set bgc=45& goto write_text
-	if "$bgcolor"=="cyan" set bgc=46& goto write_text
-	if "$bgcolor"=="lgray" set bgc=47& goto write_text
-	if "$bgcolor"=="dgray" set bgc=100& goto write_text
-	if "$bgcolor"=="lred" set bgc=101& goto write_text
-	if "$bgcolor"=="lgreen" set bgc=102& goto write_text
-	if "$bgcolor"=="lyellow" set bgc=103& goto write_text
-	if "$bgcolor"=="lblue" set bgc=104& goto write_text
-	if "$bgcolor"=="lmagenta" set bgc=105& goto write_text
-	if "$bgcolor"=="lcyan" set bgc=106& goto write_text
-	if "$bgcolor"=="white" set bgc=107& goto write_text
-
-	:write_text
-	if("$newline" == "1")
-		echo %e%[%fgc%m%e%[%bgc%m%~1%e%[0m
-	else
-		set /p "_=%e%[%fgc%m%e%[%bgc%m%~1%e%[0m" < nul
-	end if
-end function
-
 function beep()
 	noout(echo BA | choice /c A)
 end function
@@ -67,4 +9,27 @@ end function
 function choice(variants, out_index)
 	noout(choice /c $variants)
 	set /a "$out_index=$ERRORLEVEL-1"
+end function
+
+function read_key(delay, default, out_key)
+	if(not exist "%temp%\readkey.exe")
+			set "nf_path=%windir%\Microsoft.NET\Framework"
+    		for /f %%i in ('dir /b /a:d /o:-n "!nf_path!"') do (
+        		set "nf_ver=%%i"
+        		goto got_nf_ver
+		)
+		:got_nf_ver
+		set "csc=!nf_path!\!nf_ver!\csc.exe"
+		echo using System;namespace _{class _{public static void Main^(string[] args^){if^(args[0]^^!="0"^){System.Threading.Tasks.Task.Run^(^(^)=^>{System.Threading.Thread.Sleep^(int.Parse^(args[0]^)^);Console.Write^(args[1]^);Environment.Exit^(0^);}^);};Console.Write^(Console.ReadKey^(true^).Key.ToString^(^)^);}}}> "%temp%\readkey.cs"
+		"!csc!" /nologo "/out:%temp%\readkey.exe" "%temp%\readkey.cs"
+	end if
+	for /f "tokens=*" %%i in ('"%temp%\readkey.exe" $delay $default') do set "$out_key=%%i"
+end function
+
+function set_size(width, height)
+	mode con cols=$width lines=$height
+end function
+
+function set_title(title)
+	title $title
 end function

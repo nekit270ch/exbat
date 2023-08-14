@@ -1,0 +1,6 @@
+function delay(time)
+	if(not exist "%temp%\del.js")
+		echo WScript.Sleep^(WScript.Arguments^(0^)^);> "%temp%\del.js"
+	end if
+	cscript //nologo "%temp%\del.js" $time
+end function

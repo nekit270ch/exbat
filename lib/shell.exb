@@ -14,6 +14,11 @@ function run_as_admin(app_name, args)
 	mshta "javascript:moveTo(-9999,-9999);new ActiveXObject('Shell.Application').ShellExecute('%b_path:\=\\%', '%b_args:\=\\%', '', 'runas', 0);window.close();"
 end function
 
+function is_admin(out_status)
+	reg query HKU\S-1-5-20 > nul 2> nul
+	set /a $out_status=(%ERRORLEVEL% + 1) %% 2
+end function
+
 function open_image(image_file)
 	mshta "about:<head><meta http-equiv='x-ua-compatible' content='ie=9'><title>%~2</title><hta:application minimizebutton=no maximizebutton=no contextmenu=no scroll=no border=dialog /></head><body><img id=i style='position:absolute;left:0;top:0' src='$image_path'><script>i.onload=function(){var w=i.naturalWidth+30,h=i.naturalHeight+50;moveTo(screen.width/2-w/2,screen.height/2-h/2);resizeTo(w,h);}</script></body>"
 end function
@@ -62,4 +67,47 @@ function set_wallpaper(image_file)
 	noout(reg add "HKCU\Control Panel\Desktop" /v Wallpaper /d "$image_file" /t REG_SZ /f)
 	noout(reg delete "HKCU\SOFTWARE\Microsoft\Internet Explorer\Desktop\General" /v WallpaperStyle /f)
 	noout(reg add "HKCU\Control Panel\Desktop" /v WallpaperStyle /d 2 /t REG_SZ /f)
+end function
+
+function set_folder_display_name(folder, name)
+	(
+	echo.
+	echo.[.ShellClassInfo]
+	echo.LocalizedResourceName=$name
+	echo.[ViewState]
+	echo.Mode=
+	echo.Vid=
+	echo.FolderType=Generic
+	)> "$folder\desktop.ini"
+	attrib +s +h "$folder\desktop.ini"
+	attrib +r "$folder"
+end function
+
+function set_folder_icon(folder, icon)
+	(
+	echo.
+	echo.[.ShellClassInfo]
+	echo.IconResource=$icon
+	echo.[ViewState]
+	echo.Mode=
+	echo.Vid=
+	echo.FolderType=Generic
+	)> "$folder\desktop.ini"
+	attrib +s +h "$folder\desktop.ini"
+	attrib +r "$folder"
+end function
+
+function set_folder_params(folder, name, icon)
+	(
+	echo.
+	echo.[.ShellClassInfo]
+	echo.LocalizedResourceName=$name
+	echo.IconResource=$icon
+	echo.[ViewState]
+	echo.Mode=
+	echo.Vid=
+	echo.FolderType=Generic
+	)> "$folder\desktop.ini"
+	attrib +s +h "$folder\desktop.ini"
+	attrib +r "$folder"
 end function

@@ -16,3 +16,7 @@ function curl(url, out_http_status, out_result_array, out_length)
 	set "$out_http_status=%_statCode%"
 	set /a "$out_length=%_ln%"
 end function
+
+function download(url, file)
+	curl "$url" -o "$file" -s
+end function

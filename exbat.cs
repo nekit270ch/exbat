@@ -88,7 +88,7 @@ namespace ExtendedBAT{
 
                 if(!parse) continue;
 
-                if(line.StartsWith("#") || line.StartsWith("//")){
+                if(lts.StartsWith("#") || lts.StartsWith("//")){
                     fc[i] = line.Replace("#", "rem ").Replace("//", "rem ");
                 }else if(lts.StartsWith("noout(")){
                     fc[i] = line.Remove(line.Length-1).Replace("noout(", "")+"> nul";
@@ -98,21 +98,21 @@ namespace ExtendedBAT{
                     fc[i] = line.Remove(line.Length-1).Replace("quiet(", "")+"> nul 2> nul";
                 }else if(lts.StartsWith("if(")){
                     string cond = Regex.Match(line, @"if\(([^\)]+)\)").Groups[1].ToString();
-                    fc[i] = "if "+cond.Replace("<=", "leq").Replace(">=", "geq").Replace("<", "lss").Replace(">", "gtr").Replace(" == ", " equ ")+" (";
+                    fc[i] = "if "+cond.Replace("<=", "leq").Replace(">=", "geq").Replace("<", "lss").Replace(">", "gtr").Replace(" == ", " equ ").Replace("!=", "neq").Replace("&&", "if")+" (";
                 }else if(lts == "end if"){
                     fc[i] = ")";
                 }else if(lts == "else"){
                     fc[i] = ") else (";
                 }else if(lts.StartsWith("else if(")){
                     string cond = Regex.Match(line, @"else if\(([^\)]+)\)").Groups[1].ToString();
-                    fc[i] = ") else if "+cond.Replace("<=", "leq").Replace(">=", "geq").Replace("<", "lss").Replace(">", "gtr").Replace(" == ", " equ ")+" (";
+                    fc[i] = ") else if "+cond.Replace("<=", "leq").Replace(">=", "geq").Replace("<", "lss").Replace(">", "gtr").Replace(" == ", " equ ").Replace("!=", "neq").Replace("&&", "if")+" (";
                 }else if(lts.StartsWith("function ")){
                     string[] spl = line.Replace("(", " ").Replace(")", "").Replace(", ", " ").Replace(",", " ").Split(' ');
                     isFunc = true;
                     fnn = spl[1];
-                    foreach(string fa in spl.Skip(2)) fna.Add(fa);
+                    fna.Clear();
+                    foreach(string fa in spl.Skip(2)) if(fa.Trim().Length > 0) fna.Add(fa);
                     fc[i] = ":"+fnn+Environment.NewLine+"if \"%~1\"==\""+randFuncArg+"\" ( shift /1 ) else ( goto _"+randName+"_end_"+fnn+" )";
-                    fna.Add(fnn);
                 }else if(lts == "end function"){
                     isFunc = false;
                     fna.Clear();
@@ -120,18 +120,27 @@ namespace ExtendedBAT{
                     fnn = "";
                 }else if(Regex.IsMatch(lts, @"^[A-Za-z0-9_\-\.]+\(.*\)$")){
                     var m = Regex.Match(lts, @"^([A-Za-z0-9_\-\.]+)\((.*)\)$");
-                    fc[i] = "call :"+m.Groups[1].ToString()+" "+randFuncArg+" "+m.Groups[2].ToString().Replace(", ", " ").Replace(",", " ").Replace(" out ", " ");
+                    fc[i] = "call :"+m.Groups[1].ToString()+" "+randFuncArg+" "+m.Groups[2].ToString().Replace(", ", " ").Replace(",", " ").Replace("out ", "");
                 }
 
-                if(isFunc){
+                if(isFunc && fna.Count > 0){
                     for(int j = 0; j < fna.Count; j++){
                         fc[i] = fc[i].Replace("$"+fna[j], "%~"+(j+1).ToString());
                     }
                 }
 
-                fc[i] = Regex.Replace(fc[i], @"\$([A-Za-z0-9_\.\[\]]+)", new MatchEvaluator((m)=>{
+                fc[i] = Regex.Replace(fc[i], @"\$([A-Za-z0-9_\.\[\]\%]+)", new MatchEvaluator((m)=>{
                     return "!"+m.Groups[1].ToString()+"!";
                 }));
+
+                MatchCollection mmc = new Regex(@"calc\{([^\}]+)\}").Matches(fc[i]);
+                if(mmc.Count > 0){
+                    foreach(Match m in mmc){
+                        string expr = m.Groups[1].ToString();
+                        string varName = "_"+GetRandomName(20);
+                        fc[i] = "set /a "+varName+"="+expr+Environment.NewLine+fc[i].Replace(m.Value, "!"+varName+"!");
+                    }
+                }
 
                 i++;
             }
