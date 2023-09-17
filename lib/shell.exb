@@ -1,7 +1,3 @@
-function msgbox(text, title, buttons, icon, out_answer)
-	for /f "usebackq" %%i in (`mshta "javascript:moveTo(-9999,-9999);new ActiveXObject('Scripting.FileSystemObject').GetStandardStream(1).Write(new ActiveXObject('WScript.Shell').Popup('$text',0,'$title',$buttons+$icon));window.close()"`) do set "$out_answer=%%i"
-end function
-
 function run_hidden(app_name, args)
 	set "b_path=$app_name"
 	set "b_args=$args"
@@ -17,16 +13,6 @@ end function
 function is_admin(out_status)
 	reg query HKU\S-1-5-20 > nul 2> nul
 	set /a $out_status=(%ERRORLEVEL% + 1) %% 2
-end function
-
-function open_image(image_file)
-	mshta "about:<head><meta http-equiv='x-ua-compatible' content='ie=9'><title>%~2</title><hta:application minimizebutton=no maximizebutton=no contextmenu=no scroll=no border=dialog /></head><body><img id=i style='position:absolute;left:0;top:0' src='$image_path'><script>i.onload=function(){var w=i.naturalWidth+30,h=i.naturalHeight+50;moveTo(screen.width/2-w/2,screen.height/2-h/2);resizeTo(w,h);}</script></body>"
-end function
-
-function play_audio(audio_file, delay)
-	set "pth=%~1"
-	set "pth=file://%pth:\=/%"
-	mshta "about:<bgsound src='%pth%'><script>moveTo(-9999,-9999);setTimeout(function(){window.close()},$delay)</script>"
 end function
 
 function set_system_font(font_name)

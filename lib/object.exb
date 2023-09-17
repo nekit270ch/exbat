@@ -1,4 +1,4 @@
-function object_get(object, property, out_value)
+function obj_get(object, property, out_value)
 	set "$out_value=!$object.$property!"
 end function
 

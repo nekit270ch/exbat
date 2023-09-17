@@ -9,3 +9,25 @@ end function
 function random(min, max, out_result)
 	set /a "$out_result=$min + %random% %% ($max - $min)"
 end function
+
+function is_number_prime(number, out_result)
+	if $number leq 1 (
+		set "$out_result=-1"
+		goto :eof
+	)
+
+	if $number==2 (
+		set "$out_result=0"
+		goto :eof
+	)
+
+	for /l %%i in (2,1,calc{$number-1}) do (
+		set /a res=$number %% %%i
+		if !res!==0 (
+			set "$out_result=0"
+			goto :eof
+		)
+	)
+
+	set "$out_result=1"
+end function
